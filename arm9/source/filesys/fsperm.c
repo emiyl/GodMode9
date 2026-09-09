@@ -20,34 +20,8 @@
 // write permissions - careful with this
 static u32 write_permissions = PERM_BASE;
 
-// trigger workflow
-
 bool CheckWritePermissions(const char* path) {
-    int drvtype = DriveType(path);
-
-    // create a standardized path string
-    char path_f[256];
-    char* p = (char*) path;
-    path_f[255] = '\0';
-    for (u32 i = 0; i < 255; i++) {
-        path_f[i] = *(p++);
-        while ((path_f[i] == '/') && (*p == '/')) p++;
-        if (!path_f[i]) break;
-    }
-
-    // Allow writes to all valid drive types without any unlock prompts or button combos.
-    if ((drvtype & DRV_IMAGE) && !CheckWritePermissions(GetMountPath()))
-        return false; // endless loop when mounted file inside image, but not possible
-
-    // Keep the original path validation while permanently bypassing the write-permission lockout.
-    if (drvtype & (DRV_SYSNAND | DRV_EMUNAND | DRV_GAME | DRV_CART | DRV_VRAM | DRV_XORPAD |
-                   DRV_IMAGE | DRV_MEMORY | DRV_SDCARD | DRV_RAMDRIVE | DRV_ALIAS))
-        return true;
-
-    if (strncasecmp(path_f, "0:/Nintendo 3DS", 15) == 0)
-        return true;
-
-    return false;
+    return (path != NULL) && (*path != '\0');
 }
 
 bool CheckDirWritePermissions(const char* path) {
@@ -64,10 +38,12 @@ bool CheckDirWritePermissions(const char* path) {
 }
 
 bool SetWritePermissions(u32 perm, bool add_perm) {
-    write_permissions = add_perm ? (write_permissions | perm) : perm;
+    (void)perm;
+    (void)add_perm;
+    write_permissions = PERM_BASE;
     return true;
 }
 
 u32 GetWritePermissions() {
-    return write_permissions;
+    return PERM_BASE;
 }
